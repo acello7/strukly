@@ -1,0 +1,12 @@
+var R=require("../../chunks/[turbopack]_runtime.js")("server/app/debug/route.js")
+R.c("server/chunks/e7777_next_3b1cc342._.js")
+R.c("server/chunks/e7777_@firebase_auth_dist_node-esm_7b7d3ea9._.js")
+R.c("server/chunks/e7777_@grpc_grpc-js_4b8bac6e._.js")
+R.c("server/chunks/e7777_protobufjs_e833b056._.js")
+R.c("server/chunks/e7777_@firebase_firestore_dist_index_node_mjs_7d72f529._.js")
+R.c("server/chunks/e7777_@firebase_storage_dist_node-esm_index_node_esm_fba6ef46.js")
+R.c("server/chunks/e7777_8666194e._.js")
+R.c("server/chunks/[root-of-the-server]__0ac03aaf._.js")
+R.c("server/chunks/strukly__next-internal_server_app_debug_route_actions_98bb9384.js")
+R.m("[project]/strukly/node_modules/next/dist/esm/build/templates/app-route.js { INNER_APP_ROUTE => \"[project]/strukly/app/debug/route.ts [app-route] (ecmascript)\" } [app-route] (ecmascript)")
+module.exports=R.m("[project]/strukly/node_modules/next/dist/esm/build/templates/app-route.js { INNER_APP_ROUTE => \"[project]/strukly/app/debug/route.ts [app-route] (ecmascript)\" } [app-route] (ecmascript)").exports

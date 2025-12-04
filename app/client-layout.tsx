@@ -3,6 +3,8 @@
 import type React from "react"
 import { Analytics } from "@vercel/analytics/next"
 import { useEffect, useState } from "react"
+import { AuthProvider } from "@/lib/auth-context"
+import { Toaster } from "@/components/ui/sonner"
 
 export default function ClientLayout({
   children,
@@ -31,9 +33,10 @@ export default function ClientLayout({
   }, [])
 
   return (
-    <>
+    <AuthProvider>
       {mounted && children}
+      <Toaster />
       <Analytics />
-    </>
+    </AuthProvider>
   )
 }

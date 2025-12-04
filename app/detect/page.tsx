@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import { useState, useRef } from "react"
+import { useState, useRef, useEffect } from "react"
 import Link from "next/link"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -11,6 +11,12 @@ import { detectReceiptOCR, autoCorrectItemName } from "@/components/ocr-detector
 import { useLanguage } from "@/lib/language-context"
 import { translations } from "@/lib/translations"
 import { LanguageToggle } from "@/components/language-toggle"
+import { useAuth } from "@/lib/auth-context"
+import { useRouter } from "next/navigation"
+import { createReceipt } from "@/lib/db-service"
+import { uploadReceiptImage } from "@/lib/storage-service"
+import { toast } from "sonner"
+import { UserNav } from "@/components/user-nav"
 
 interface Item {
   id: string
@@ -31,19 +37,43 @@ interface Receipt {
 export default function DetectPage() {
   const { language } = useLanguage()
   const t = translations[language]
+  const { user, loading } = useAuth()
+  const router = useRouter()
 
   const [uploadedImage, setUploadedImage] = useState<string | null>(null)
+  const [imageFile, setImageFile] = useState<File | null>(null)
   const [items, setItems] = useState<Item[]>([])
   const [receipts, setReceipts] = useState<Receipt[]>([])
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editValues, setEditValues] = useState<Item | null>(null)
   const [isProcessing, setIsProcessing] = useState(false)
+  const [isSaving, setIsSaving] = useState(false)
+  const [uploadProgress, setUploadProgress] = useState<number | null>(null)
   const [merchant, setMerchant] = useState("")
   const fileInputRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    if (!loading && !user) {
+      router.push("/login")
+    }
+  }, [user, loading, router])
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    )
+  }
+
+  if (!user) {
+    return null
+  }
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file) {
+      setImageFile(file)
       const reader = new FileReader()
       reader.onloadend = async () => {
         setUploadedImage(reader.result as string)
@@ -62,6 +92,7 @@ export default function DetectPage() {
           setMerchant(result.merchant)
         } catch (error) {
           console.error("OCR detection error:", error)
+          toast.error(language === "id" ? "Gagal mendeteksi struk" : "Failed to detect receipt")
         } finally {
           setIsProcessing(false)
         }
@@ -99,27 +130,52 @@ export default function DetectPage() {
 
   const totalRevenue = items.reduce((sum, item) => sum + item.quantity * item.price, 0)
 
-  const handleSaveReceipt = () => {
-    if (items.length === 0) return
+  const handleSaveReceipt = async () => {
+    if (items.length === 0 || !user || !imageFile) return
 
-    const receipt: Receipt = {
-      id: Date.now().toString(),
-      merchant: merchant || "Merchant Tidak Diketahui",
-      date: new Date().toLocaleDateString("id-ID"),
-      items,
-      total: totalRevenue,
-      timestamp: new Date(),
+    setIsSaving(true)
+
+    try {
+      // Upload image to Firebase Storage with progress callback
+      setUploadProgress(0)
+      const imageUrl = await uploadReceiptImage(imageFile, user.uid, (p) => setUploadProgress(p))
+
+      // Save receipt to Firestore
+      await createReceipt({
+        userId: user.uid,
+        imageUrl,
+        storeName: merchant || (language === "id" ? "Merchant Tidak Diketahui" : "Unknown Merchant"),
+        date: new Date().toISOString().split("T")[0],
+        totalAmount: totalRevenue,
+        items: items.map((item) => ({
+          name: item.name,
+          quantity: item.quantity,
+          price: item.price,
+          total: item.quantity * item.price,
+        })),
+        category: "General",
+        paymentMethod: "Cash",
+      })
+
+      toast.success(language === "id" ? "Struk berhasil disimpan!" : "Receipt saved successfully!")
+
+      // Reset form
+      setUploadedImage(null)
+      setImageFile(null)
+      setItems([])
+      setMerchant("")
+
+      // Redirect to revenue page
+      setTimeout(() => {
+        router.push("/revenue")
+      }, 1000)
+    } catch (error: any) {
+      console.error("Save receipt error:", error)
+      toast.error(error.message || (language === "id" ? "Gagal menyimpan struk" : "Failed to save receipt"))
+    } finally {
+      setIsSaving(false)
+      setUploadProgress(null)
     }
-
-    setReceipts([...receipts, receipt])
-
-    // Reset form
-    setUploadedImage(null)
-    setItems([])
-    setMerchant("")
-
-    // Show success message
-    alert("Struk berhasil disimpan!")
   }
 
   return (
@@ -137,11 +193,11 @@ export default function DetectPage() {
               <h1 className="text-xl font-bold">{t.ambil_foto_struk}</h1>
             </div>
             <div className="flex gap-2">
-              {/* Language Toggle */}
               <LanguageToggle />
               <Link href="/revenue">
                 <Button variant="outline">{t.laporan}</Button>
               </Link>
+              <UserNav />
             </div>
           </div>
         </div>
@@ -329,9 +385,20 @@ export default function DetectPage() {
                   <Button
                     className="w-full bg-primary hover:bg-primary/90 text-white"
                     onClick={handleSaveReceipt}
-                    disabled={isProcessing}
+                    disabled={isProcessing || isSaving}
                   >
-                    {t.simpan_database}
+                    {isSaving ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        {uploadProgress !== null ? (
+                          <>{language === "id" ? "Mengunggah" : "Uploading"} {uploadProgress}%</>
+                        ) : (
+                          <>{language === "id" ? "Menyimpan..." : "Saving..."}</>
+                        )}
+                      </>
+                    ) : (
+                      t.simpan_database
+                    )}
                   </Button>
                 </div>
               )}
