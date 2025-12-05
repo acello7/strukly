@@ -9,6 +9,7 @@ import { LanguageToggle } from "@/components/language-toggle"
 import { motion } from "framer-motion"
 import { useLanguage } from "@/lib/language-context"
 import { translations } from "@/lib/translations"
+import { Chatbot } from "@/components/chatbot"
 
 export default function HomePage() {
   const { language } = useLanguage()
@@ -212,6 +213,9 @@ export default function HomePage() {
           </div>
         </div>
       </footer>
+
+      {/* Chatbot */}
+      <Chatbot />
     </main>
   )
 }
