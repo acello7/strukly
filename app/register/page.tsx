@@ -122,7 +122,7 @@ export default function RegisterPage() {
               <ArrowLeft className="w-4 h-4" />
               <span className="text-sm font-medium">{t.laporan}</span>
             </Link>
-            <div className="flex gap-2">
+            <div className="flex gap-2 items-center">
               {/* Language Toggle */}
               <LanguageToggle />
               {/* Theme Toggle */}

@@ -78,13 +78,13 @@ export default function LoginPage() {
     <main className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 flex flex-col">
       {/* Top Navigation */}
       <nav className="border-b border-border">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px lg:px-8">
+          <div className="flex items-center justify-between h-16 ">
             <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
               <ArrowLeft className="w-4 h-4" />
-              <span className="text-sm font-medium">{t.laporan}</span>
+              {/* <span className="text-sm font-medium">{t.laporan}</span> */}
             </Link>
-            <div className="flex gap-2">
+            <div className="flex gap-2 items-center">
               <LanguageToggle />
               <ThemeToggle />
             </div>

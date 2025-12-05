@@ -36,7 +36,7 @@ export function UserNav() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" className="rounded-full">
+        <Button variant="ghost" size="icon" className="rounded-full cursor-pointer">
           <User className="h-5 w-5" />
         </Button>
       </DropdownMenuTrigger>

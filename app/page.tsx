@@ -3,16 +3,38 @@
 import Link from "next/link"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { ArrowRight, BarChart3, Camera, TrendingUp } from "lucide-react"
+import { ArrowRight, BarChart3, Camera, TrendingUp, User } from "lucide-react"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { LanguageToggle } from "@/components/language-toggle"
 import { motion } from "framer-motion"
 import { useLanguage } from "@/lib/language-context"
 import { translations } from "@/lib/translations"
+import SpotlightCard from "@/components/SpotlightCard"
+import { useEffect, useState } from "react"
+import { onAuthStateChanged } from "firebase/auth"
+import { auth } from "@/lib/firebase" // Import Firebase auth
+import { UserNav } from "@/components/user-nav"
 
 export default function HomePage() {
   const { language } = useLanguage()
   const t = translations[language]
+  const [isLoggedIn, setIsLoggedIn] = useState(false) // State untuk login
+  const [user, setUser] = useState(null) // State untuk data pengguna
+
+  useEffect(() => {
+    // Pantau perubahan status login
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      if (currentUser) {
+        setIsLoggedIn(true)
+        setUser(currentUser) // Simpan data pengguna
+      } else {
+        setIsLoggedIn(false)
+        setUser(null)
+      }
+    })
+
+    return () => unsubscribe() // Bersihkan listener saat komponen unmount
+  }, [])
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -53,16 +75,22 @@ export default function HomePage() {
               </Link>
               <LanguageToggle />
               <ThemeToggle />
-              <Link href="/login" className="hidden sm:block">
-                <Button variant="outline" className="bg-transparent text-xs sm:text-sm hover:bg-accent! cursor-pointer">
-                  {t.masuk}
-                </Button>
-              </Link>
-              <Link href="/register">
-                <Button className="bg-primary hover:bg-primary/90 text-primary-foreground text-xs sm:text-sm py-1 sm:py-2 cursor-pointer">
-                  {t.daftar}
-                </Button>
-              </Link>
+              {isLoggedIn ? (
+                <UserNav />
+              ) : (
+                <>
+                  <Link href="/login" className="hidden sm:block">
+                    <Button variant="outline" className="bg-transparent text-xs sm:text-sm hover:bg-accent! cursor-pointer">
+                      {t.masuk}
+                    </Button>
+                  </Link>
+                  <Link href="/register">
+                    <Button className="bg-primary hover:bg-primary/90 text-primary-foreground text-xs sm:text-sm py-1 sm:py-2 cursor-pointer">
+                      {t.daftar}
+                    </Button>
+                  </Link>
+                </>
+              )}
             </div>
           </div>
         </div>
@@ -91,41 +119,26 @@ export default function HomePage() {
               <Link href="/detect" className="w-full sm:w-auto">
                 <Button
                   size="lg"
-                  className="bg-primary hover:bg-primary/90 text-primary-foreground w-full sm:w-auto text-sm sm:text-base cursor-pointer"
+                  className="bg-primary hover:bg-primary/80 hover:scale-102 text-primary-foreground w-full sm:w-auto text-sm sm:text-base cursor-pointer"
                 >
                   {t.deteksi_struk_button} <ArrowRight className="ml-2 w-4 h-4" />
                 </Button>
               </Link>
               <Link href="/revenue" className="w-full sm:w-auto">
-                <Button size="lg" variant="outline" className="w-full sm:w-auto bg-transparent text-sm sm:text-base cursor-pointer">
+                <Button size="lg" variant="outline" className="w-full sm:w-auto bg-transparent text-sm sm:text-base hover:bg-accent! hover:scale-102 cursor-pointer">
                   {t.lihat_laporan}
                 </Button>
               </Link>
             </motion.div>
           </motion.div>
 
-          <motion.div
-            className="relative"
-            variants={itemVariants}
-            whileHover={{ scale: 1.02 }}
-            transition={{ type: "spring", stiffness: 300 }}
-          >
-            <div className="aspect-square rounded-2xl bg-gradient-to-br from-primary/10 via-background to-primary/5 border-2 border-primary/20 flex items-center justify-center overflow-hidden">
-              <div className="text-center space-y-4">
-                <motion.div
-                  className="text-5xl sm:text-6xl"
-                  animate={{ y: [0, -10, 0] }}
-                  transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY }}
-                >
-                  📸
-                </motion.div>
-                <p className="text-sm sm:text-base text-muted-foreground">{t.klik_drag}</p>
-                <div className="w-full h-20 sm:h-24 bg-primary/5 rounded-lg border-2 border-dashed border-primary/20 flex items-center justify-center">
-                  <span className="text-xs sm:text-sm text-muted-foreground">{t.png_jpg}</span>
-                </div>
-              </div>
-            </div>
-          </motion.div>
+          <SpotlightCard className="custom-spotlight-card" spotlightColor="rgba(81, 255, 73, 0.2)">
+            <img
+              src="/hero-img.png"
+              alt="Testing Image"
+              className="w-full h-full object-cover rounded-2xl"
+            />
+          </SpotlightCard>
         </div>
 
         <motion.section
@@ -191,7 +204,7 @@ export default function HomePage() {
           <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold">{t.siap_optimalkan}</h2>
           <p className="text-sm sm:text-base opacity-90 max-w-2xl mx-auto">{t.bergabung_ribuan}</p>
           <Link href="/detect">
-            <Button size="lg" variant="secondary" className="mt-2 text-xs sm:text-sm">
+            <Button size="lg" variant="secondary" className="mt-2 text-xs sm:text-sm cursor-pointer">
               {t.mulai_deteksi} <ArrowRight className="ml-2 w-4 h-4" />
             </Button>
           </Link>

@@ -1,7 +1,7 @@
 export const translations = {
   id: {
     // Navigation & Common
-    laporan: "Laporan",
+    laporan: "Dashboard",
     masuk: "Masuk",
     daftar: "Daftar",
     deteksi_struk: "+ Deteksi Struk",
@@ -45,8 +45,8 @@ export const translations = {
     laporan_harian: "Laporan Harian",
 
     // Detect Page
-    ambil_foto_struk: "1. Ambil Foto Struk",
-    data_terdeteksi: "2. Data Terdeteksi",
+    ambil_foto_struk: "Ambil Foto Struk",
+    data_terdeteksi: "Data Terdeteksi",
     klik_drag: "Klik atau drag foto struk di sini",
     png_jpg: "PNG, JPG hingga 5MB",
     ganti_foto: "Ganti Foto",
@@ -62,6 +62,7 @@ export const translations = {
     edit: "Edit",
     hapus: "Hapus",
     struk_berhasil: "Struk berhasil disimpan!",
+    nama_item: "Nama Item",
 
     // Auth Pages
     login_title: "Masuk ke Strukly",
@@ -77,8 +78,8 @@ export const translations = {
   },
   en: {
     // Navigation & Common
-    laporan: "Report",
-    masuk: "Sign In",
+    laporan: "Dashboard",
+    masuk: "Login",
     daftar: "Sign Up",
     deteksi_struk: "+ Detect Receipt",
 
@@ -120,8 +121,8 @@ export const translations = {
     laporan_harian: "Daily Report",
 
     // Detect Page
-    ambil_foto_struk: "1. Take Receipt Photo",
-    data_terdeteksi: "2. Detected Data",
+    ambil_foto_struk: "Take Receipt Photo",
+    data_terdeteksi: "Detected Data",
     klik_drag: "Click or drag receipt photo here",
     png_jpg: "PNG, JPG up to 5MB",
     ganti_foto: "Change Photo",
@@ -137,6 +138,7 @@ export const translations = {
     edit: "Edit",
     hapus: "Delete",
     struk_berhasil: "Receipt saved successfully!",
+    nama_item: "Item Name",
 
     // Auth Pages
     login_title: "Sign In to Strukly",

@@ -35,6 +35,7 @@ interface Receipt {
 }
 
 export default function DetectPage() {
+    const [isDragActive, setIsDragActive] = useState(false);
   const { language } = useLanguage()
   const t = translations[language]
   const { user, loading } = useAuth()
@@ -186,16 +187,18 @@ export default function DetectPage() {
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center gap-4">
               <Link href="/">
-                <Button variant="ghost" size="icon">
+                <Button variant="ghost" size="icon" className="cursor-pointer">
                   <ArrowLeft className="w-4 h-4" />
                 </Button>
               </Link>
-              <h1 className="text-xl font-bold">{t.ambil_foto_struk}</h1>
+              <h1 className="text-xl font-bold">{t.deteksi_struk_button}</h1>
             </div>
             <div className="flex gap-2">
               <LanguageToggle />
               <Link href="/revenue">
-                <Button variant="outline">{t.laporan}</Button>
+                <Button variant="outline" className="bg-transparent text-xs sm:text-sm font-semibold hover:bg-accent! cursor-pointer transition-colors">
+                  {t.laporan}
+                </Button>
               </Link>
               <UserNav />
             </div>
@@ -209,8 +212,41 @@ export default function DetectPage() {
           {/* Image Upload */}
           <motion.div className="space-y-4" initial={{ x: -20, opacity: 0 }} animate={{ x: 0, opacity: 1 }}>
             <h2 className="text-2xl font-bold">{t.ambil_foto_struk}</h2>
-            <Card className="border-border/50 border-2 border-dashed p-8 cursor-pointer hover:border-primary/50 transition-colors">
-              <label className="cursor-pointer block">
+            <Card
+              className={`border-border/50 border-2 border-dashed p-8 cursor-pointer hover:border-primary/50 transition-colors min-h-[400px] min-w-[400px] flex items-center justify-center ${isDragActive ? 'border-primary bg-primary/10' : ''}`}
+              onDragOver={e => { e.preventDefault(); setIsDragActive(true); }}
+              onDragLeave={e => { e.preventDefault(); setIsDragActive(false); }}
+              onDrop={e => {
+                e.preventDefault();
+                setIsDragActive(false);
+                const file = e.dataTransfer.files?.[0];
+                if (file) {
+                  setImageFile(file);
+                  const reader = new FileReader();
+                  reader.onloadend = async () => {
+                    setUploadedImage(reader.result as string);
+                    setIsProcessing(true);
+                    try {
+                      const result = await detectReceiptOCR(reader.result as string);
+                      setItems(result.items.map((item, idx) => ({
+                        id: idx.toString(),
+                        name: autoCorrectItemName(item.name),
+                        quantity: item.quantity,
+                        price: item.price,
+                      })));
+                      setMerchant(result.merchant);
+                    } catch (error) {
+                      console.error("OCR detection error:", error);
+                      toast.error(language === "id" ? "Gagal mendeteksi struk" : "Failed to detect receipt");
+                    } finally {
+                      setIsProcessing(false);
+                    }
+                  };
+                  reader.readAsDataURL(file);
+                }
+              }}
+            >
+              <label className="cursor-pointer w-full flex flex-col items-center justify-center">
                 <input
                   ref={fileInputRef}
                   type="file"
@@ -229,10 +265,10 @@ export default function DetectPage() {
                       variant="outline"
                       className="w-full bg-transparent"
                       onClick={(e) => {
-                        e.preventDefault()
-                        setUploadedImage(null)
-                        setItems([])
-                        setMerchant("")
+                        e.preventDefault();
+                        setUploadedImage(null);
+                        setItems([]);
+                        setMerchant("");
                       }}
                     >
                       {t.ganti_foto}
@@ -249,6 +285,9 @@ export default function DetectPage() {
                     <div className="text-center space-y-2">
                       <p className="font-semibold">{t.klik_drag}</p>
                       <p className="text-sm text-muted-foreground">{t.png_jpg}</p>
+                      {isDragActive && (
+                        <p className="text-primary font-semibold mt-2">Drop file here...</p>
+                      )}
                     </div>
                   </div>
                 )}
@@ -259,7 +298,7 @@ export default function DetectPage() {
           {/* Items Detected */}
           <motion.div className="space-y-4" initial={{ x: 20, opacity: 0 }} animate={{ x: 0, opacity: 1 }}>
             <h2 className="text-2xl font-bold">{t.data_terdeteksi}</h2>
-            <Card className="border-border/50 p-6 space-y-4">
+            <Card className="border-border/50 p-6 space-y-4 overflow-visible">
               {merchant && (
                 <motion.div
                   className="p-3 bg-primary/10 rounded-lg border border-primary/20"
@@ -300,8 +339,8 @@ export default function DetectPage() {
                             type="text"
                             value={editValues?.name || ""}
                             onChange={(e) => setEditValues(editValues ? { ...editValues, name: e.target.value } : null)}
-                            className="w-full px-3 py-2 bg-background border border-border rounded text-sm"
-                            placeholder={t.email}
+                            className="w-full max-w-full px-3 py-2 bg-background border border-border rounded text-sm"
+                            placeholder={t.nama_item}
                           />
                           <div className="flex gap-2">
                             <input
@@ -312,7 +351,7 @@ export default function DetectPage() {
                                   editValues ? { ...editValues, quantity: Number.parseInt(e.target.value) || 0 } : null,
                                 )
                               }
-                              className="flex-1 px-3 py-2 bg-background border border-border rounded text-sm"
+                              className="flex-1 min-w-0 px-3 py-2 bg-background border border-border rounded text-sm"
                               placeholder={t.qty}
                             />
                             <input
@@ -323,14 +362,14 @@ export default function DetectPage() {
                                   editValues ? { ...editValues, price: Number.parseInt(e.target.value) || 0 } : null,
                                 )
                               }
-                              className="flex-1 px-3 py-2 bg-background border border-border rounded text-sm"
+                              className="flex-1 min-w-0 px-3 py-2 bg-background border border-border rounded text-sm"
                               placeholder={t.harga}
                             />
                           </div>
                           <div className="flex gap-2">
                             <Button
                               size="sm"
-                              className="flex-1 bg-primary text-white hover:bg-primary/90"
+                              className="flex-1 bg-primary text-white hover:bg-primary/80 cursor-pointer"
                               onClick={handleSaveEdit}
                             >
                               <Save className="w-4 h-4 mr-1" /> {t.simpan}
@@ -338,7 +377,7 @@ export default function DetectPage() {
                             <Button
                               size="sm"
                               variant="outline"
-                              className="flex-1 bg-transparent"
+                              className="flex-1 bg-transparent hover:bg-accent! cursor-pointer"
                               onClick={() => setEditingId(null)}
                             >
                               {t.batal}
@@ -357,10 +396,10 @@ export default function DetectPage() {
                             </p>
                           </div>
                           <div className="flex gap-2">
-                            <Button size="icon" variant="ghost" onClick={() => handleEdit(item)}>
+                            <Button size="icon" variant="ghost" className="cursor-pointer" onClick={() => handleEdit(item)}>
                               <Edit2 className="w-4 h-4" />
                             </Button>
-                            <Button size="icon" variant="ghost" onClick={() => handleDelete(item.id)}>
+                            <Button size="icon" variant="ghost" className="cursor-pointer" onClick={() => handleDelete(item.id)}>
                               <Trash2 className="w-4 h-4 text-destructive" />
                             </Button>
                           </div>
@@ -371,7 +410,7 @@ export default function DetectPage() {
                 </div>
               </AnimatePresence>
 
-              <Button variant="outline" className="w-full bg-transparent" onClick={handleAddItem}>
+              <Button variant="outline" className="w-full bg-transparent hover:bg-accent! cursor-pointer" onClick={handleAddItem}>
                 <Plus className="w-4 h-4 mr-2" /> {t.tambah_item}
               </Button>
 
@@ -383,7 +422,7 @@ export default function DetectPage() {
                     <span className="text-2xl font-bold text-primary">Rp {totalRevenue.toLocaleString("id-ID")}</span>
                   </div>
                   <Button
-                    className="w-full bg-primary hover:bg-primary/90 text-white"
+                    className="w-full bg-primary hover:bg-primary/80 text-white cursor-pointer"
                     onClick={handleSaveReceipt}
                     disabled={isProcessing || isSaving}
                   >

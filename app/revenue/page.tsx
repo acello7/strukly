@@ -191,7 +191,7 @@ export default function RevenuePage() {
           <div className="flex items-center justify-between h-14 sm:h-16">
             <div className="flex items-center gap-2 sm:gap-4">
               <Link href="/">
-                <Button variant="ghost" size="icon" className="w-8 h-8 sm:w-10 sm:h-10">
+                <Button variant="ghost" size="icon" className="w-8 h-8 sm:w-10 sm:h-10 cursor-pointer">
                   <ArrowLeft className="w-4 h-4" />
                 </Button>
               </Link>
@@ -204,7 +204,7 @@ export default function RevenuePage() {
               <ThemeToggle />
 
               <Link href="/detect">
-                <Button className="bg-primary hover:bg-primary/90 text-white text-xs sm:text-sm py-1 sm:py-2 px-2 sm:px-4">
+                <Button className="bg-primary hover:bg-primary/90 text-white text-xs sm:text-sm py-1 sm:py-2 px-2 sm:px-4 cursor-pointer">
                   {t.deteksi_struk}
                 </Button>
               </Link>
@@ -232,7 +232,7 @@ export default function RevenuePage() {
                 <Button
                   variant={filter === option.value ? "default" : "outline"}
                   onClick={() => setFilter(option.value)}
-                  className={`text-xs sm:text-sm ${filter === option.value ? "bg-primary text-white" : ""}`}
+                  className={`text-xs sm:text-sm cursor-pointer hover:bg-accent/50! ${filter === option.value ? "bg-primary text-white" : ""}`}
                 >
                   {option.label}
                 </Button>
