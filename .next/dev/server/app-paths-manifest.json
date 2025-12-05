@@ -1,0 +1,5 @@
+{
+  "/api/chat/ocr/route": "app/api/chat/ocr/route.js",
+  "/detect/page": "app/detect/page.js",
+  "/page": "app/page.js"
+}
